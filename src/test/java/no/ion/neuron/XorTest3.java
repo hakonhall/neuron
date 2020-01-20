@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 public class XorTest3 {
     @Test
     void train() {
-        var learner = new AnalyticLearner(new FixedRateLearner(.1f));
+        var learner = new AnalyticLearner(new FixedRateLearner(.01f));
         learner.setPrintEachEpoch(true);
         var optimizer = new MiniBatchGradientDescent(4, learner);
         var net = new NeuralNet(2, optimizer);
@@ -34,7 +34,7 @@ public class XorTest3 {
                 .add(Vector.from(1, 0), Vector.from(1))
                 .add(Vector.from(1, 1), Vector.from(0));
 
-        trainer.runEpochs(100);
+        trainer.runEpochs(1000);
         System.out.println(net);
 
         var epochs = learner.epochs();

@@ -38,18 +38,20 @@ public class AnalyticLearner implements Learner {
 
     private void print(Epoch epoch) {
         System.out.println(String.format(
-                "%f %f %f %f %f",
+                "%f %f %f %f %f %f",
                 epoch.epochInfo.error(),
                 epoch.adjustments.length(),
                 epoch.decomposition.parallel,
                 epoch.decomposition.transverse,
-                epoch.cumulativeAdjustments.length()));
+                epoch.cumulativeAdjustments.length(),
+                epoch.cumulativeLengths));
     }
 
     public static class Epoch {
         private final EpochInfo epochInfo;
         private final Vector adjustments;
         private final Vector cumulativeAdjustments;
+        private final float cumulativeLengths;
         private final ScalarVectorDecomposition decomposition;
 
         private Epoch(EpochInfo epochInfo, Vector adjustments, Epoch previousEpoch) {
@@ -58,10 +60,12 @@ public class AnalyticLearner implements Learner {
 
             if (previousEpoch == null) {
                 this.cumulativeAdjustments = adjustments.copy();
+                this.cumulativeLengths = adjustments.length();
                 this.decomposition = new ScalarVectorDecomposition(0, adjustments.length());
             } else {
                 this.cumulativeAdjustments = previousEpoch.cumulativeAdjustments.copy();
                 this.cumulativeAdjustments.add(adjustments);
+                this.cumulativeLengths = previousEpoch.cumulativeLengths + adjustments.length();
                 this.decomposition = decompose(previousEpoch.adjustments, adjustments);
             }
         }
@@ -76,7 +80,7 @@ public class AnalyticLearner implements Learner {
             Vector previousAdjustmentUnitVectorPossiblyZero = previousAdjustments.directionOrZero();
             float parallel = adjustments.dot(previousAdjustmentUnitVectorPossiblyZero);
 
-            Vector parallelVector = adjustments.copy();
+            Vector parallelVector = previousAdjustmentUnitVectorPossiblyZero.copy();
             parallelVector.multiplyScalar(parallel);
 
             Vector transverseVector = adjustments.copy();
