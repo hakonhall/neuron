@@ -18,6 +18,14 @@ public interface Transform {
     /** The number of parameters. */
     int parameterSize();
 
+    interface ComputationResult {
+        Vector output();
+
+        BackPropagation backPropagate(Vector errorGradient);
+    }
+
+    default ComputationResult compute2(Vector input, Vector idealOutput) { return null; }
+
     /**
      * Compute the output vector given an input vector.
      *

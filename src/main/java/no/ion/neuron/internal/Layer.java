@@ -49,6 +49,35 @@ public class Layer implements ParametrizedLayer {
     }
 
     public Result process(ComputationId computationId, Vector input, Vector idealOutput) {
+        Transform.ComputationResult result = transform.compute2(input, idealOutput);
+        if (result != null) {
+            Vector output = result.output();
+            if (output.size() != transform.outputSize()) {
+                throw new IllegalStateException("Output size from transform " + transform +
+                        " does not match the declared output size: " + outputSize());
+            }
+
+            Result downstreamResult;
+            if (this.downstream == null) {
+                Vector errorGradient = new Vector(transform.outputSize(), 1f);
+                downstreamResult = new Result(output).setErrorGradient(errorGradient);
+            } else {
+                downstreamResult = downstream.process(computationId, output, idealOutput);
+            }
+
+            Transform.BackPropagation backPropagation = result.backPropagate(downstreamResult.errorGradient);
+
+            if (backPropagation.errorGradientOfInputs().size() != transform.inputSize()) {
+                throw new IllegalStateException(String.format("Back-propagation vector size %d does not match transform's input size %d",
+                        backPropagation.errorGradientOfInputs().size(), transform.inputSize()));
+            }
+
+            optimizer.registerErrorGradientOfParameters(computationId, this, backPropagation.errorGradientOfParameters());
+
+            // Only error gradient different from downstream result.
+            return downstreamResult.setErrorGradient(backPropagation.errorGradientOfInputs());
+        }
+
         Vector output = transform.compute(input, idealOutput);
         lastOutput = output;
 
