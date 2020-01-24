@@ -4,7 +4,7 @@ import no.ion.neuron.tensor.Vector;
 
 public interface Learner {
     /**
-     * Information about an epoch that a learner can use to decide the adjustments to apply to the parameters..
+     * Information about an epoch that a learner can use to decide the adjustments to apply to the parameters.
      */
     class EpochInfo {
         private final float error;

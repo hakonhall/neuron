@@ -17,8 +17,7 @@ public interface ErrorFunction {
         /** dE / dy_i, where E is error() and y_i is output.get(i). */
         Vector errorGradientOfOutput();
 
-        /** May be null if parameterSize() is 0. */
-        default Vector errorGradientOfParameters() { return null; }
+        default Vector errorGradientOfParameters() { return new Vector(0); }
     }
 
     /** Compute the error/loss given the output of the neural network, and the ideal output of the neural network. */

@@ -18,10 +18,22 @@ public interface Transform {
     /** The number of parameters. */
     int parameterSize();
 
+    /**
+     * The result of computing the back-propagation, see {@link #backPropagate(Vector, Vector, Vector, Vector) backPropagate}
+     * for an introduction.
+     */
+    interface BackPropagation {
+        /** dE/dXj, where E is the error/loss, and Xj is the j'th input (input.get(j)). */
+        Vector errorGradientOfInputs();
+
+        /** dE/dPk, where E is the error/loss, and Pk is the k'th parameter. */
+        Vector errorGradientOfParameters();
+    }
+
     interface ComputationResult {
         Vector output();
 
-        BackPropagation backPropagate(Vector errorGradient);
+        BackPropagation backPropagate(Vector errorGradientOfOutput);
     }
 
     default ComputationResult compute2(Vector input, Vector idealOutput) { return null; }
@@ -34,33 +46,6 @@ public interface Transform {
      * @return the output vector to pass to the downstream layer.
      */
     Vector compute(Vector input, Vector idealOutput);
-
-    /**
-     * The result of computing the back-propagation, see {@link #backPropagate(Vector, Vector, Vector, Vector) backPropagate}
-     * for an introduction.
-     */
-    interface BackPropagation {
-        /**
-         * @return a vector of size {@link Transform#inputSize()}, with the j'th element being dE / dXj,
-         *         where Xj is the j'th element of the {@code input} vector, and hence the j'th element
-         *         of the output vector of the upstream layer, thereby providing the upstream layer with
-         *         it's {@code errorGradientOfOutput} necessary to apply its back-propagation. Note that
-         *         {@code dE / dXj = sum_i dE/dYi dYi/dXj}, where {@code dE/dYi} is the errorGradientOfOutput
-         *         passed to {@link #backPropagate(Vector, Vector, Vector, Vector)}. Therefore the only unknowns
-         *         this function needs to find are the {@code dYi/dXj}.
-         */
-        Vector errorGradientOfInputs();
-
-        /**
-         * @return the error gradient w.r.t. the parameters of the transform, i.e. {@code dE / dPj}
-         *         where Pj is the j'th learnable (adjustable) internal parameter of this transform.
-         *         The number of parameters is determined by the transform. Note that
-         *         {@code dE / dPj = sum_i dE/dYi dYi/dPj}, where {@code dE/dYi} is the errorGradientOfOutput
-         *         passed to {@link #backPropagate(Vector, Vector, Vector, Vector)}. Therefore the only unknowns
-         *         this function needs to find are {@code dYi/dPj}.
-         */
-        Vector errorGradientOfParameters();
-    }
 
     /**
      * The output of the forward computation of the neural network, for which this transform received the given

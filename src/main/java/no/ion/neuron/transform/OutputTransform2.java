@@ -45,6 +45,6 @@ public class OutputTransform2 implements Transform {
 
     @Override
     public void adjustParameters(Vector amount) {
-        throw new UnsupportedOperationException();
+        errorFunction.adjustParameters(amount);
     }
 }

@@ -19,7 +19,6 @@ class BiasTransformTest {
                         4 + 5, 3 + 7,
                         6 + 5, 6 + 7));
 
-        trainer.runEpochsUntil(transform::bias, Vector.from(5, 7), 1e-5f
-        );
+        trainer.runEpochsUntil(transform::bias, Vector.from(5, 7), 1e-5f);
     }
 }

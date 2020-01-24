@@ -4,6 +4,7 @@ import no.ion.neuron.tensor.Matrix;
 import no.ion.neuron.tensor.Vector;
 import no.ion.neuron.NeuralNet;
 import no.ion.neuron.optimizer.MiniBatchGradientDescent;
+import no.ion.neuron.transform.loss.ErrorSquared;
 
 import java.util.function.Supplier;
 
@@ -23,6 +24,7 @@ public class TestTrainer {
     public TestTrainer(int inputSize, Transform transform) {
         this(inputSize);
         net.addTransform(transform);
+        net.addTransform(new OutputTransform2(net.outputSize(), new ErrorSquared()));
     }
 
     public TestTrainer(int inputSize) {
@@ -43,10 +45,6 @@ public class TestTrainer {
     public void setEpoch(Matrix inputs, Matrix correctOutputs) {
         if (inputs.columns() != net.inputSize()) {
             throw new IllegalArgumentException("The number of columns in inputs doesn't match network input size");
-        }
-
-        if (correctOutputs.columns() != net.outputSize()) {
-            throw new IllegalArgumentException("The number of columns in correctOutputs doesn't match network output size");
         }
 
         this.inputs = inputs;
