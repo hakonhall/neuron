@@ -7,18 +7,18 @@ public interface Optimizer {
      * Information about an epoch that a learner can use to decide the adjustments to apply to the parameters.
      */
     class EpochInfo {
-        private final Vector outputSum;
+        private final float outputSum;
         private final int batchSize;
         private final Vector gradient;
 
-        public EpochInfo(Vector outputSum, int batchSize, Vector gradient) {
+        public EpochInfo(float outputSum, int batchSize, Vector gradient) {
             this.outputSum = outputSum;
             this.batchSize = batchSize;
             this.gradient = gradient;
         }
 
         /** The sum of the output of the epoch. */
-        public Vector outputSum() { return outputSum; }
+        public float outputSum() { return outputSum; }
 
         /** The number of examples in the training set. */
         public int batchSize() { return batchSize; }
@@ -38,5 +38,5 @@ public interface Optimizer {
     }
 
     /** Calculate the adjustment to each parameter given information on a training set. */
-    Vector learn(EpochInfo epochInfo);
+    Vector calculateParameterAdjustments(EpochInfo epochInfo);
 }

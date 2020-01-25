@@ -1,5 +1,6 @@
 package no.ion.neuron.transform;
 
+import no.ion.neuron.ComputeContext;
 import no.ion.neuron.tensor.Vector;
 import no.ion.neuron.internal.BackPropagationImpl;
 
@@ -17,7 +18,7 @@ public class BiasTransform implements Transform {
     @Override public int parameterSize() { return bias.size(); }
 
     @Override
-    public ComputationResult compute(Vector input, Vector idealOutput) {
+    public ComputationResult compute(ComputeContext context, Vector input) {
         Vector output = input.copy();
         output.add(bias);
         return new ComputationResult() {

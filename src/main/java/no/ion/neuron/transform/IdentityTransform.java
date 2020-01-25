@@ -1,5 +1,6 @@
 package no.ion.neuron.transform;
 
+import no.ion.neuron.ComputeContext;
 import no.ion.neuron.tensor.Vector;
 import no.ion.neuron.internal.BackPropagationImpl;
 
@@ -12,7 +13,7 @@ public class IdentityTransform implements Transform {
     @Override public int parameterSize() { return 0; }
 
     @Override
-    public ComputationResult compute(Vector input, Vector idealOutput) {
+    public ComputationResult compute(ComputeContext context, Vector input) {
         return new ComputationResult() {
             @Override
             public Vector output() {

@@ -1,5 +1,6 @@
 package no.ion.neuron.transform;
 
+import no.ion.neuron.ComputeContext;
 import no.ion.neuron.tensor.Vector;
 
 /**
@@ -38,7 +39,7 @@ public interface Transform {
         BackPropagation backPropagate(Vector errorGradientOfOutput);
     }
 
-    ComputationResult compute(Vector input, Vector idealOutput);
+    ComputationResult compute(ComputeContext context, Vector input);
 
     /**
      * @param amount the amount to adjust the parameters. The {@code amount} vector has parameters matching 1-1

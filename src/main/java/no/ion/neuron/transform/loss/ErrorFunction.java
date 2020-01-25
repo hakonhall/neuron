@@ -6,7 +6,7 @@ import no.ion.neuron.tensor.Vector;
  * In training a neural network, the parameters of the network will be adjusted to minimize the error/loss -
  * a float denoting the error of the computation: the smaller the number the better the neural network performs.
  *
- * <p>A fundamental assumption of this error function is that computations of the neural net is independent -
+ * <p>A fundamental assumption of this error function is that computations of the neural net are independent -
  * the error of a single computation is independent of any other computations.</p>
  */
 public interface ErrorFunction {
@@ -14,9 +14,10 @@ public interface ErrorFunction {
         /** The error/loss of the computation. */
         float error();
 
-        /** dE / dy_i, where E is error() and y_i is output.get(i). */
+        /** dE/dYj, where E is error() and Yj is output.get(j). */
         Vector errorGradientOfOutput();
 
+        /** dE/dPk, where E is error(), and Pk is the k'th parameter of the error function. */
         default Vector errorGradientOfParameters() { return new Vector(0); }
     }
 

@@ -20,8 +20,8 @@ public class AnalyticOptimizer implements Optimizer {
     }
 
     @Override
-    public Vector learn(EpochInfo epochInfo) {
-        Vector adjustments = wrappedOptimizer.learn(epochInfo);
+    public Vector calculateParameterAdjustments(EpochInfo epochInfo) {
+        Vector adjustments = wrappedOptimizer.calculateParameterAdjustments(epochInfo);
         var previousEpoch = epochs.size() == 0 ? null : epochs.get(epochs.size() - 1);
         Epoch epoch = new Epoch(epochInfo.deepCopy(), adjustments.copy(), previousEpoch);
 
@@ -38,8 +38,8 @@ public class AnalyticOptimizer implements Optimizer {
 
     private void print(Epoch epoch) {
         System.out.println(String.format(
-                "%s %f %f %f %f %f",
-                epoch.epochInfo.outputSum().toString(),
+                "%f %f %f %f %f %f",
+                epoch.epochInfo.outputSum(),
                 epoch.adjustments.length(),
                 epoch.decomposition.parallel,
                 epoch.decomposition.transverse,

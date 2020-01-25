@@ -1,69 +1,63 @@
 package no.ion.neuron.internal;
 
-import no.ion.neuron.optimizer.GradientGatherer;
+import no.ion.neuron.ComputeContext;
 import no.ion.neuron.tensor.Vector;
-import no.ion.neuron.optimizer.ComputationId;
 import no.ion.neuron.optimizer.LayerId;
 import no.ion.neuron.optimizer.ParametrizedLayer;
 import no.ion.neuron.transform.Transform;
 
-public class Layer implements ParametrizedLayer {
+public class GradientDescentLayer implements ParametrizedLayer {
     private final LayerId layerId;
     private final Transform transform;
-    private final GradientGatherer gradientGatherer;
+    private final Vector cumulativeErrorGradientOfParameters;
 
-    private Layer upstream = null;
-    private Layer downstream = null;
+    private GradientDescentLayer upstream = null;
+    private GradientDescentLayer downstream = null;
 
-    private Vector lastOutput;
-
-    public Layer(Transform transform, GradientGatherer gradientGatherer) {
+    public GradientDescentLayer(Transform transform) {
         this.layerId = LayerId.createNext();
         this.transform = transform;
-        this.gradientGatherer = gradientGatherer;
+        this.cumulativeErrorGradientOfParameters = new Vector(transform.parameterSize());
     }
 
     @Override
     public LayerId layerId() { return layerId; }
-    @Override
-    public int parameterSize() { return transform.parameterSize(); }
 
-    public void setUpstreamLayer(Layer upstream) { this.upstream = upstream; }
-    public void setDownstreamLayer(Layer downstream) { this.downstream = downstream; }
+    public void setUpstreamLayer(GradientDescentLayer upstream) { this.upstream = upstream; }
+    public void setDownstreamLayer(GradientDescentLayer downstream) { this.downstream = downstream; }
     public int inputSize() { return transform.inputSize(); }
     public int outputSize() { return transform.outputSize(); }
 
-    public static class Result {
+    public static class ProcessResult {
         private final Vector netOutput;
         private Vector errorGradient;
 
-        public Result(Vector netOutput) { this.netOutput = netOutput; }
+        public ProcessResult(Vector netOutput) { this.netOutput = netOutput; }
 
         public Vector netOutput() { return netOutput; }
         public Vector errorGradient() { return errorGradient; }
 
-        public Result setErrorGradient(Vector errorGradient) {
+        public ProcessResult setErrorGradient(Vector errorGradient) {
             this.errorGradient = errorGradient;
             return this;
         }
     }
 
-    public Result process(ComputationId computationId, Vector input, Vector idealOutput) {
-        Transform.ComputationResult result = transform.compute(input, idealOutput);
+    public ProcessResult process(ComputeContext context, Vector input) {
+        Transform.ComputationResult result = transform.compute(context, input);
 
         Vector output = result.output();
         if (output.size() != transform.outputSize()) {
             throw new IllegalStateException("Output size from transform " + transform +
                     " does not match the declared output size: " + outputSize());
         }
-        lastOutput = output;
 
-        Result downstreamResult;
+        ProcessResult downstreamResult;
         if (this.downstream == null) {
             Vector errorGradient = new Vector(transform.outputSize(), 1f);
-            downstreamResult = new Result(output).setErrorGradient(errorGradient);
+            downstreamResult = new ProcessResult(output).setErrorGradient(errorGradient);
         } else {
-            downstreamResult = downstream.process(computationId, output, idealOutput);
+            downstreamResult = downstream.process(context, output);
         }
 
         Transform.BackPropagation backPropagation = result.backPropagate(downstreamResult.errorGradient);
@@ -73,22 +67,22 @@ public class Layer implements ParametrizedLayer {
                     backPropagation.errorGradientOfInputs().size(), transform.inputSize()));
         }
 
-        gradientGatherer.registerErrorGradientOfParameters(computationId, this, backPropagation.errorGradientOfParameters());
+        Vector errorGradientOfParameters = backPropagation.errorGradientOfParameters();
+        cumulativeErrorGradientOfParameters.add(errorGradientOfParameters);
 
         // Only error gradient different from downstream result.
         return downstreamResult.setErrorGradient(backPropagation.errorGradientOfInputs());
     }
 
-    @Override
-    public void adjustParameters(Vector parameterAdjustments) {
-        transform.adjustParameters(parameterAdjustments);
-    }
+    @Override public int parameterSize() { return transform.parameterSize(); }
+    @Override public Vector cumulativeErrorGradientOfParameters() { return cumulativeErrorGradientOfParameters; }
+    @Override public void clearCumulativeErrorGradientOfParameters() { cumulativeErrorGradientOfParameters.clear(); }
+    @Override public void adjustParameters(Vector parameterAdjustments) { transform.adjustParameters(parameterAdjustments); }
 
     public String toString(boolean withLastOutput) {
-        return "Layer{" +
+        return "GradientDescentLayer{" +
                 "layerId=" + layerId +
                 ", transform=" + transform +
-                (withLastOutput ? ", lastOutput=" + lastOutput : "") +
                 '}';
     }
 
