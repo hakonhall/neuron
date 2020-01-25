@@ -1,6 +1,6 @@
-package no.ion.neuron.transform.mapper;
+package no.ion.neuron.transform.activation;
 
-public class LeakyReLU implements Mapper {
+public class LeakyReLU implements ActivationFunction {
     private final float epsilon;
 
     /**

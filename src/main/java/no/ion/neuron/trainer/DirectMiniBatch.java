@@ -43,7 +43,7 @@ public class DirectMiniBatch {
 
     public int runUntilAverageErrorInEpochIsBelow(float epsilon, int maxEpochs) {
         int i = 0;
-        for (; i < maxEpochs && runEpoch() <= epsilon; ++i)
+        for (; i < maxEpochs && runEpoch() > epsilon; ++i)
             ;
 
         return i;

@@ -1,32 +1,32 @@
 package no.ion.neuron.transform;
 
 import no.ion.neuron.ComputeContext;
-import no.ion.neuron.tensor.Vector;
 import no.ion.neuron.internal.BackPropagationImpl;
-import no.ion.neuron.transform.mapper.Mapper;
+import no.ion.neuron.tensor.Vector;
+import no.ion.neuron.transform.activation.ActivationFunction;
 
 /**
- * A transform built around a Mapper.
+ * A transform built around an ActivationFunction.
  */
-public class MapTransform implements Transform {
+public class ActivationTransform implements Transform {
     private final int size;
-    private final Mapper mapper;
+    private final ActivationFunction activationFunction;
 
-    public MapTransform(int size, Mapper mapper) {
+    public ActivationTransform(int size, ActivationFunction activationFunction) {
         this.size = size;
-        this.mapper = mapper;
+        this.activationFunction = activationFunction;
     }
 
     @Override public int inputSize() { return size; }
     @Override public int outputSize() { return size; }
-    @Override public int parameterSize() { return mapper.parameterSize(); }
-    @Override public void adjustParameters(Vector amount) { mapper.adjustParameters(amount); }
+    @Override public int parameterSize() { return 0; }
+    @Override public void adjustParameters(Vector amount) { }
 
     @Override
     public ComputationResult compute(ComputeContext context, Vector input) {
         Vector output = new Vector(size);
         for (int i = 0; i < size; ++i) {
-            float value = mapper.f(input.get(i));
+            float value = activationFunction.f(input.get(i));
             output.setElement(i, value);
         }
 
@@ -40,18 +40,12 @@ public class MapTransform implements Transform {
             public BackPropagation backPropagate(Vector errorGradientOfOutput) {
                 Vector errorGradientOfInput = new Vector(inputSize());
                 for (int i = 0; i < inputSize(); ++i) {
-                    float derivative = mapper.fGradient(input.get(i), output.get(i));
+                    float derivative = activationFunction.fGradient(input.get(i), output.get(i));
                     float errorGradientOfInput_i = derivative * errorGradientOfOutput.get(i);
                     errorGradientOfInput.addToElement(i, errorGradientOfInput_i);
                 }
 
-                Vector errorGradientOfParameter = new Vector(parameterSize());
-                for (int j = 0; j < parameterSize(); ++j) {
-                    for (int i = 0; i < outputSize(); ++i) {
-                        float paramDerivative = mapper.computeGradientOfParameter(j, input.get(i), output.get(i));
-                        errorGradientOfParameter.addToElement(j, errorGradientOfOutput.get(i) * paramDerivative);
-                    }
-                }
+                Vector errorGradientOfParameter = new Vector(0);
 
                 return new BackPropagationImpl(errorGradientOfInput, errorGradientOfParameter);
             }
@@ -60,8 +54,8 @@ public class MapTransform implements Transform {
 
     @Override
     public String toString() {
-        return "MapTransform{" +
-                "mapper=" + mapper +
+        return "ActivationTransform{" +
+                "activationFunction=" + activationFunction +
                 '}';
     }
 }

@@ -1,9 +1,9 @@
 package no.ion.neuron.transform;
 
+import no.ion.neuron.FeedForwardNeuralNet;
 import no.ion.neuron.learner.FixedRateOptimizer;
 import no.ion.neuron.tensor.Matrix;
 import no.ion.neuron.tensor.Vector;
-import no.ion.neuron.FeedForwardNeuralNet;
 import no.ion.neuron.trainer.DirectMiniBatch;
 import no.ion.neuron.trainer.Trainer;
 import no.ion.neuron.transform.loss.HalfErrorSquared;
@@ -23,12 +23,17 @@ public class TestTrainer {
     // epoch variables
     private Matrix correctOutputs;
     private Matrix inputs;
+    private boolean printDebug;
 
     public TestTrainer(int inputSize, Transform transform) {
         this.net = new FeedForwardNeuralNet(inputSize);
         net.addTransform(transform);
         this.trainer = new Trainer(net, new HalfErrorSquared(), new FixedRateOptimizer(0.1f));
         this.miniBatch = new DirectMiniBatch(trainer);
+    }
+
+    public void setDebug(boolean printDebug) {
+        this.printDebug = printDebug;
     }
 
     /**
@@ -58,7 +63,10 @@ public class TestTrainer {
 
     public void epoch() {
         miniBatch.runEpoch();
-        System.out.println(net);
+
+        if (printDebug) {
+            System.out.println(net);
+        }
     }
 
     public void runEpochsUntil(Supplier<Vector> parameterSupplier, Vector correctParameters, float rmseLimit) {
@@ -71,7 +79,9 @@ public class TestTrainer {
             parameterError.subtract(correctParameters);
             double rmse = Math.sqrt(parameterError.squared());
             if (rmse < rmseLimit) {
-                System.out.println("Parameters converged after " + i + " iterations: " + currentParameters);
+                if (printDebug) {
+                    System.out.println("Parameters converged after " + i + " iterations: " + currentParameters);
+                }
                 return;
             }
         }

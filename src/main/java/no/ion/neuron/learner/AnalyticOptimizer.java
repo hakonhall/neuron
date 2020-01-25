@@ -39,7 +39,7 @@ public class AnalyticOptimizer implements Optimizer {
     private void print(Epoch epoch) {
         System.out.println(String.format(
                 "%f %f %f %f %f %f",
-                epoch.epochInfo.outputSum(),
+                epoch.epochInfo.errorSum() / epoch.epochInfo.batchSize(),
                 epoch.adjustments.length(),
                 epoch.decomposition.parallel,
                 epoch.decomposition.transverse,

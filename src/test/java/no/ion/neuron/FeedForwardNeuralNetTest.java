@@ -6,8 +6,8 @@ import no.ion.neuron.tensor.Vector;
 import no.ion.neuron.trainer.DirectMiniBatch;
 import no.ion.neuron.trainer.Trainer;
 import no.ion.neuron.transform.loss.HalfErrorSquared;
-import no.ion.neuron.transform.mapper.LeakyReLU;
-import no.ion.neuron.transform.mapper.Mapper;
+import no.ion.neuron.transform.activation.ActivationFunction;
+import no.ion.neuron.transform.activation.LeakyReLU;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -30,8 +30,8 @@ class FeedForwardNeuralNetTest {
 
         Matrix weight2 = Matrix.from(1, .1f);
         Vector bias2 = Vector.from(0.5f);
-        Mapper mapper2 = new LeakyReLU(0.1f);
-        net.addLayer(weight2, bias2, mapper2);
+        ActivationFunction activationFunction2 = new LeakyReLU(0.1f);
+        net.addLayer(weight2, bias2, activationFunction2);
 
         miniBatch
                 .add(Vector.from(0), Vector.from(0))

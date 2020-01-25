@@ -7,10 +7,14 @@ import no.ion.neuron.learner.AnalyticOptimizer;
 import no.ion.neuron.trainer.DirectMiniBatch;
 import no.ion.neuron.trainer.Trainer;
 import no.ion.neuron.transform.loss.HalfErrorSquared;
-import no.ion.neuron.transform.mapper.LeakyReLU;
+import no.ion.neuron.transform.activation.LeakyReLU;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class XorTest {
+    private static final boolean PRINT_DEBUG = false;
+
     @Test
     void train() {
         var net = new FeedForwardNeuralNet(2);
@@ -25,7 +29,7 @@ public class XorTest {
         net.addLayer(Matrix.from(1, .4f, .5f), Vector.from(-.2f), new LeakyReLU(.1f));
 
         var optimizer = new AnalyticOptimizer(new FixedRateOptimizer(.01f));
-        optimizer.setPrintEachEpoch(true);
+        optimizer.setPrintEachEpoch(PRINT_DEBUG);
         var trainer = new Trainer(net, new HalfErrorSquared(), optimizer);
         var miniBatch = new DirectMiniBatch(trainer);
 
@@ -36,9 +40,16 @@ public class XorTest {
                 .add(Vector.from(1, 0), Vector.from(1))
                 .add(Vector.from(1, 1), Vector.from(0));
 
-        miniBatch.runEpochs(1000);
-        System.out.println(net);
+        int i = miniBatch.runUntilAverageErrorInEpochIsBelow(0.001f, 10000);
+        if (i == 10000) {
+            throw new IllegalStateException("Ran too many times: " + i);
+        }
 
-        var epochs = optimizer.epochs();
+        assertEquals(1192, i);
+
+        if (PRINT_DEBUG) {
+            System.out.println("Completed after " + i + " epochs");
+            System.out.println(net);
+        }
     }
 }
