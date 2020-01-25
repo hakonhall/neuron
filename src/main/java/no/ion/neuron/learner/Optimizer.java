@@ -7,18 +7,18 @@ public interface Optimizer {
      * Information about an epoch that a learner can use to decide the adjustments to apply to the parameters.
      */
     class EpochInfo {
-        private final float outputSum;
+        private final float errorSum;
         private final int batchSize;
         private final Vector gradient;
 
-        public EpochInfo(float outputSum, int batchSize, Vector gradient) {
-            this.outputSum = outputSum;
+        public EpochInfo(float errorSum, int batchSize, Vector gradient) {
+            this.errorSum = errorSum;
             this.batchSize = batchSize;
             this.gradient = gradient;
         }
 
         /** The sum of the output of the epoch. */
-        public float outputSum() { return outputSum; }
+        public float errorSum() { return errorSum; }
 
         /** The number of examples in the training set. */
         public int batchSize() { return batchSize; }
@@ -33,7 +33,7 @@ public interface Optimizer {
         public Vector gradient() { return gradient; }
 
         public EpochInfo deepCopy() {
-            return new EpochInfo(outputSum, batchSize, gradient.copy());
+            return new EpochInfo(errorSum, batchSize, gradient.copy());
         }
     }
 

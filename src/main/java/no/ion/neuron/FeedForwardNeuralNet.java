@@ -6,12 +6,11 @@ import no.ion.neuron.tensor.Matrix;
 import no.ion.neuron.tensor.Vector;
 import no.ion.neuron.transform.BiasTransform;
 import no.ion.neuron.transform.IdentityTransform;
-import no.ion.neuron.transform.MapTransform;
+import no.ion.neuron.transform.ActivationTransform;
 import no.ion.neuron.transform.Transform;
 import no.ion.neuron.transform.WeightTransform;
-import no.ion.neuron.transform.mapper.Mapper;
+import no.ion.neuron.transform.activation.ActivationFunction;
 
-import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,7 +22,7 @@ public class FeedForwardNeuralNet {
         layers.add(new GradientDescentLayer(new IdentityTransform(inputSize)));
     }
 
-    public GradientDescentLayer addLayer(Matrix weight, Vector bias, Mapper mapper) {
+    public GradientDescentLayer addLayer(Matrix weight, Vector bias, ActivationFunction activationFunction) {
         if (weight.columns() != outputLayer().outputSize()) {
             throw new IllegalArgumentException("Last layer has size " + outputLayer().outputSize() +
                     " but weight has input size " + weight.columns());
@@ -34,7 +33,7 @@ public class FeedForwardNeuralNet {
 
         addTransform(new WeightTransform(weight));
         addTransform(new BiasTransform(bias));
-        addTransform(new MapTransform(bias.size(), mapper));
+        addTransform(new ActivationTransform(bias.size(), activationFunction));
 
         return outputLayer();
     }
