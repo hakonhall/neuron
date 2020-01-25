@@ -14,7 +14,7 @@ public class FixedRateOptimizer implements Optimizer {
     }
 
     @Override
-    public Vector learn(EpochInfo epochInfo) {
+    public Vector calculateParameterAdjustments(EpochInfo epochInfo) {
         Vector adjustments = epochInfo.gradient().copy();
         adjustments.multiplyScalar(-learningRate);
         return adjustments;

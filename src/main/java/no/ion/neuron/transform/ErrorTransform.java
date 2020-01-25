@@ -1,14 +1,19 @@
 package no.ion.neuron.transform;
 
+import no.ion.neuron.ComputeContext;
 import no.ion.neuron.internal.BackPropagationImpl;
 import no.ion.neuron.tensor.Vector;
+import no.ion.neuron.transform.Transform;
 import no.ion.neuron.transform.loss.ErrorFunction;
 
-public class OutputTransform implements Transform {
+/**
+ * Makes a Transform out of an ErrorFunction.
+ */
+public class ErrorTransform implements Transform {
     private final int inputSize;
     private final ErrorFunction errorFunction;
 
-    public OutputTransform(int inputSize, ErrorFunction errorFunction) {
+    public ErrorTransform(int inputSize, ErrorFunction errorFunction) {
         this.inputSize = inputSize;
         this.errorFunction = errorFunction;
     }
@@ -18,8 +23,8 @@ public class OutputTransform implements Transform {
     @Override public int parameterSize() { return errorFunction.parameterSize(); }
 
     @Override
-    public ComputationResult compute(Vector input, Vector idealOutput) {
-        ErrorFunction.Computation computation = errorFunction.compute(input, idealOutput);
+    public ComputationResult compute(ComputeContext context, Vector input) {
+        ErrorFunction.Computation computation = errorFunction.compute(input, context.idealOutput());
         return new ComputationResult() {
             @Override
             public Vector output() {
@@ -40,7 +45,7 @@ public class OutputTransform implements Transform {
 
     @Override
     public String toString() {
-        return "OutputTransform{" +
+        return "ErrorTransform{" +
                 "inputSize=" + inputSize +
                 ", errorFunction=" + errorFunction +
                 '}';

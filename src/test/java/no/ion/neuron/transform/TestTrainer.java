@@ -1,9 +1,11 @@
 package no.ion.neuron.transform;
 
+import no.ion.neuron.learner.FixedRateOptimizer;
 import no.ion.neuron.tensor.Matrix;
 import no.ion.neuron.tensor.Vector;
-import no.ion.neuron.NeuralNet;
-import no.ion.neuron.optimizer.MiniBatchGradientDescent;
+import no.ion.neuron.FeedForwardNeuralNet;
+import no.ion.neuron.trainer.DirectMiniBatch;
+import no.ion.neuron.trainer.Trainer;
 import no.ion.neuron.transform.loss.HalfErrorSquared;
 
 import java.util.function.Supplier;
@@ -14,28 +16,19 @@ import static org.junit.jupiter.api.Assertions.fail;
  * A class for training a single layer with 2 inputs.
  */
 public class TestTrainer {
-    private final MiniBatchGradientDescent optimizer;
-    private final NeuralNet net;
+    private final FeedForwardNeuralNet net;
+    private final Trainer trainer;
+    private final DirectMiniBatch miniBatch;
 
     // epoch variables
     private Matrix correctOutputs;
     private Matrix inputs;
 
     public TestTrainer(int inputSize, Transform transform) {
-        this(inputSize);
+        this.net = new FeedForwardNeuralNet(inputSize);
         net.addTransform(transform);
-        net.addTransform(new OutputTransform(net.outputSize(), new HalfErrorSquared()));
-    }
-
-    public TestTrainer(int inputSize) {
-        optimizer = new MiniBatchGradientDescent(1, 0.1f);
-        net = new NeuralNet(inputSize, optimizer);
-    }
-
-    public NeuralNet net() { return net; }
-
-    public void run(Vector input, Vector correctOutput) {
-        net.compute(input, correctOutput);
+        this.trainer = new Trainer(net, new HalfErrorSquared(), new FixedRateOptimizer(0.1f));
+        this.miniBatch = new DirectMiniBatch(trainer);
     }
 
     /**
@@ -43,25 +36,28 @@ public class TestTrainer {
      * in {@code inputs} and {@code correctOutputs} is run in an {@link #epoch()}.
      */
     public void setEpoch(Matrix inputs, Matrix correctOutputs) {
+        if (inputs.rows() != correctOutputs.rows()) {
+            throw new IllegalArgumentException("Each row of inputs and correctOutputs is supposed to be one sample, " +
+                    "but they are not equal: " + inputs.rows() + " and " + correctOutputs.rows());
+        }
+
         if (inputs.columns() != net.inputSize()) {
             throw new IllegalArgumentException("The number of columns in inputs doesn't match network input size");
         }
 
-        this.inputs = inputs;
-        this.correctOutputs = correctOutputs;
+        if (correctOutputs.columns() != trainer.outputSizeOfOriginalNet()) {
+            throw new IllegalArgumentException("The number of columns in correctOutputs is supposed to be " +
+                    "the size of the output, but the sizes are not equal: " + correctOutputs.columns() + " and " +
+                    trainer.outputSizeOfOriginalNet());
+        }
+
+        for (int sample = 0; sample < inputs.rows(); ++sample) {
+            miniBatch.add(inputs.row(sample), correctOutputs.row(sample));
+        }
     }
 
     public void epoch() {
-        if (inputs == null || correctOutputs == null) {
-            throw new IllegalStateException("setEpoch() has not been called");
-        }
-
-        for (int rowIndex = 0; rowIndex < inputs.rows(); ++rowIndex) {
-            Vector input = inputs.row(rowIndex);
-            Vector correctOutput = correctOutputs.row(rowIndex);
-            run(input, correctOutput);
-        }
-
+        miniBatch.runEpoch();
         System.out.println(net);
     }
 

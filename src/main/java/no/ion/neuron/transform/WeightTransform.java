@@ -1,5 +1,6 @@
 package no.ion.neuron.transform;
 
+import no.ion.neuron.ComputeContext;
 import no.ion.neuron.tensor.Matrix;
 import no.ion.neuron.tensor.Vector;
 import no.ion.neuron.internal.BackPropagationImpl;
@@ -17,7 +18,7 @@ public class WeightTransform implements Transform {
     @Override public int parameterSize() { return weight.rows() * weight.columns(); }
 
     @Override
-    public ComputationResult compute(Vector input, Vector idealOutput) {
+    public ComputationResult compute(ComputeContext context, Vector input) {
         Vector output = weight.dot(input);
 
         return new ComputationResult() {

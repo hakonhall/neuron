@@ -1,5 +1,6 @@
 package no.ion.neuron.transform;
 
+import no.ion.neuron.ComputeContext;
 import no.ion.neuron.tensor.Vector;
 import no.ion.neuron.internal.BackPropagationImpl;
 import no.ion.neuron.transform.mapper.Mapper;
@@ -22,7 +23,7 @@ public class MapTransform implements Transform {
     @Override public void adjustParameters(Vector amount) { mapper.adjustParameters(amount); }
 
     @Override
-    public ComputationResult compute(Vector input, Vector idealOutput) {
+    public ComputationResult compute(ComputeContext context, Vector input) {
         Vector output = new Vector(size);
         for (int i = 0; i < size; ++i) {
             float value = mapper.f(input.get(i));
