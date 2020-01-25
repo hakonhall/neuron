@@ -17,7 +17,7 @@ public class BiasTransform implements Transform {
     @Override public int parameterSize() { return bias.size(); }
 
     @Override
-    public ComputationResult compute2(Vector input, Vector idealOutput) {
+    public ComputationResult compute(Vector input, Vector idealOutput) {
         Vector output = input.copy();
         output.add(bias);
         return new ComputationResult() {
@@ -38,25 +38,6 @@ public class BiasTransform implements Transform {
                 return new BackPropagationImpl(errorGradientOfInput, errorGradientOfParameters);
             }
         };
-    }
-
-    @Override
-    public Vector compute(Vector input, Vector idealOutput) {
-        Vector output = input.copy();
-        output.add(bias);
-        return output;
-    }
-
-    @Override
-    public BackPropagation backPropagate(Vector input, Vector output, Vector idealOutput, Vector errorGradientOfOutput) {
-        Vector errorGradientOfInput = new Vector(inputSize());
-        Vector errorGradientOfParameters = new Vector(parameterSize());
-        for (int i = 0; i < bias.size(); ++i) {
-            errorGradientOfInput.setElement(i, errorGradientOfOutput.get(i));
-            errorGradientOfParameters.setElement(i, errorGradientOfOutput.get(i));
-        }
-
-        return new BackPropagationImpl(errorGradientOfInput, errorGradientOfParameters);
     }
 
     @Override

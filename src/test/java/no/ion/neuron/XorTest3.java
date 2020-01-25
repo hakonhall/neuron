@@ -1,9 +1,9 @@
 package no.ion.neuron;
 
+import no.ion.neuron.learner.FixedRateOptimizer;
 import no.ion.neuron.tensor.Matrix;
 import no.ion.neuron.tensor.Vector;
-import no.ion.neuron.learner.AnalyticLearner;
-import no.ion.neuron.learner.FixedRateLearner;
+import no.ion.neuron.learner.AnalyticOptimizer;
 import no.ion.neuron.optimizer.MiniBatchGradientDescent;
 import no.ion.neuron.trainer.Trainer;
 import no.ion.neuron.transform.mapper.LeakyReLU;
@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 public class XorTest3 {
     @Test
     void train() {
-        var learner = new AnalyticLearner(new FixedRateLearner(.01f));
+        var learner = new AnalyticOptimizer(new FixedRateOptimizer(.01f));
         learner.setPrintEachEpoch(true);
         var optimizer = new MiniBatchGradientDescent(4, learner);
         var net = new NeuralNet(2, optimizer);

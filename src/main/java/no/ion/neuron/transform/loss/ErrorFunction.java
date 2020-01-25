@@ -25,4 +25,5 @@ public interface ErrorFunction {
 
     default int parameterSize() { return 0; }
     default void adjustParameters(Vector amount) {}
+    String toString();
 }

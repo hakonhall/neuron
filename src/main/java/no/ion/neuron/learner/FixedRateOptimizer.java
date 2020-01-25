@@ -2,10 +2,10 @@ package no.ion.neuron.learner;
 
 import no.ion.neuron.tensor.Vector;
 
-public class FixedRateLearner implements Learner {
+public class FixedRateOptimizer implements Optimizer {
     private final float learningRate;
 
-    public FixedRateLearner(float learningRate) {
+    public FixedRateOptimizer(float learningRate) {
         this.learningRate = learningRate;
 
         if (learningRate <= 0) {

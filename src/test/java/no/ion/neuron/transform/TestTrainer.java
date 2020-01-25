@@ -4,7 +4,7 @@ import no.ion.neuron.tensor.Matrix;
 import no.ion.neuron.tensor.Vector;
 import no.ion.neuron.NeuralNet;
 import no.ion.neuron.optimizer.MiniBatchGradientDescent;
-import no.ion.neuron.transform.loss.ErrorSquared;
+import no.ion.neuron.transform.loss.HalfErrorSquared;
 
 import java.util.function.Supplier;
 
@@ -24,7 +24,7 @@ public class TestTrainer {
     public TestTrainer(int inputSize, Transform transform) {
         this(inputSize);
         net.addTransform(transform);
-        net.addTransform(new OutputTransform2(net.outputSize(), new ErrorSquared()));
+        net.addTransform(new OutputTransform(net.outputSize(), new HalfErrorSquared()));
     }
 
     public TestTrainer(int inputSize) {

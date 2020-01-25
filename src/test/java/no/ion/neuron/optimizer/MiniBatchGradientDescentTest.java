@@ -1,7 +1,7 @@
 package no.ion.neuron.optimizer;
 
+import no.ion.neuron.learner.Optimizer;
 import no.ion.neuron.tensor.Vector;
-import no.ion.neuron.learner.Learner;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -17,9 +17,8 @@ import static org.mockito.Mockito.when;
 class MiniBatchGradientDescentTest {
     @Test
     void trivial() {
-        Learner learner = mock(Learner.class);
-        MiniBatchGradientDescent optimizer = new MiniBatchGradientDescent(1, learner);
-        optimizer.keepErrorHistory();
+        Optimizer optimizer = mock(Optimizer.class);
+        MiniBatchGradientDescent gradientDescent = new MiniBatchGradientDescent(1, optimizer);
 
         Vector input1 = Vector.from(1, 2);
 
@@ -44,17 +43,13 @@ class MiniBatchGradientDescentTest {
         Vector output1 = Vector.from(2, 1);
 
         ComputationId computationId1 = ComputationId.createNext();
-        optimizer.startComputation(computationId1, input1, idealOutput1);
-        Vector outputGradient = optimizer.errorGradient(computationId1, output1);
+        gradientDescent.startComputation(computationId1, input1, idealOutput1);
 
         Vector error1 = output1.copy();
         error1.subtract(idealOutput1);
         assertEquals(Vector.from(3, -2), error1);
-        assertEquals(error1, outputGradient);
-        assertEquals(1, optimizer.errorHistory().size());
         float E = (3 * 3 + 2 * 2) / 2f;
         assertEquals(E, error1.squared() / 2f);
-        assertEquals(E, optimizer.errorHistory().get(0));
 
         ParametrizedLayer layer = mock(ParametrizedLayer.class);
         LayerId layerId = LayerId.createNext();
@@ -70,23 +65,25 @@ class MiniBatchGradientDescentTest {
                 3 * (-1),
                 -2 * 2,
                 -2);
-        optimizer.registerErrorGradientOfParameters(computationId1, layer, errorGradient);
+        gradientDescent.registerErrorGradientOfParameters(computationId1, layer, errorGradient);
 
         verify(layer, times(1)).parameterSize();
         verify(layer, atLeast(0)).layerId();
         verifyNoMoreInteractions(layer);
 
-        // This makes learner the same as FixedRateLearner(0.1).
-        when(learner.learn(any())).thenReturn(Vector.from(0.3f, 0.4f, 0.2f));
+        // This makes learner the same as FixedRateOptimizer(0.1).
+        when(optimizer.learn(any())).thenReturn(Vector.from(0.3f, 0.4f, 0.2f));
 
-        optimizer.endComputation(computationId1);
+        gradientDescent.endComputation(computationId1, Vector.from(E));
 
-        var epochInfoCaptor = ArgumentCaptor.forClass(Learner.EpochInfo.class);
+        var epochInfoCaptor = ArgumentCaptor.forClass(Optimizer.EpochInfo.class);
         var ECaptor = ArgumentCaptor.forClass(Float.class);
         var batchSizeCaptor = ArgumentCaptor.forClass(Integer.class);
         var gradientCaptor = ArgumentCaptor.forClass(Vector.class);
-        verify(learner, times(1)).learn(epochInfoCaptor.capture());
-        assertEquals(E, epochInfoCaptor.getValue().error());
+        verify(optimizer, times(1)).learn(epochInfoCaptor.capture());
+        Vector outputSum = epochInfoCaptor.getValue().outputSum();
+        assertEquals(1, outputSum.size());
+        assertEquals(E, outputSum.get(0) / epochInfoCaptor.getValue().batchSize());
         assertEquals(1, epochInfoCaptor.getValue().batchSize());
         assertEquals(errorGradient, epochInfoCaptor.getValue().gradient());
 

@@ -26,7 +26,6 @@ class NeuralNetTest {
     @Test
     void trivialTwoLayers() {
         optimizer = new MiniBatchGradientDescent(1, 0.1f);
-        optimizer.keepErrorHistory();
 
         net = new NeuralNet(1, optimizer);
 
@@ -48,7 +47,6 @@ class NeuralNetTest {
     @Test
     void twoLayers() {
         var optimizer = new MiniBatchGradientDescent(1, 0.1f);
-        optimizer.keepErrorHistory();
 
         var net = new NeuralNet(2, optimizer);
 
@@ -68,10 +66,5 @@ class NeuralNetTest {
         var correctOutput = Vector.from(correctOutput1);
         net.compute(input, correctOutput);
         System.out.println(net);
-        System.out.println("E = " + lastRunErrorSquared());
-    }
-
-    private float lastRunErrorSquared() {
-        return optimizer.errorHistory().get(optimizer.errorHistory().size() - 1);
     }
 }

@@ -1,11 +1,11 @@
 package no.ion.neuron;
 
+import no.ion.neuron.optimizer.GradientGatherer;
 import no.ion.neuron.tensor.Matrix;
 import no.ion.neuron.tensor.Vector;
 import no.ion.neuron.internal.Layer;
 import no.ion.neuron.optimizer.ComputationId;
 import no.ion.neuron.optimizer.LayerId;
-import no.ion.neuron.optimizer.Optimizer;
 import no.ion.neuron.transform.BiasTransform;
 import no.ion.neuron.transform.IdentityTransform;
 import no.ion.neuron.transform.MapTransform;
@@ -20,12 +20,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class NeuralNet {
-    private final Optimizer optimizer;
+    private final GradientGatherer gradientGatherer;
     private final Map<LayerId, Layer> layerMap = new HashMap<>();
     private final List<Layer> layers = new ArrayList<>();
 
-    public NeuralNet(int inputSize, Optimizer optimizer) {
-        this.optimizer = optimizer;
+    public NeuralNet(int inputSize, GradientGatherer gradientGatherer) {
+        this.gradientGatherer = gradientGatherer;
         addTransform(new IdentityTransform(inputSize));
     }
 
@@ -46,7 +46,7 @@ public class NeuralNet {
     }
 
     public Layer addTransform(Transform transform) {
-        Layer layer = new Layer(transform, optimizer);
+        Layer layer = new Layer(transform, gradientGatherer);
 
         if (outputLayer() != null) {
             layer.setUpstreamLayer(outputLayer());
@@ -60,9 +60,11 @@ public class NeuralNet {
 
     public Vector compute(Vector input, Vector idealOutput) {
         var computationId = ComputationId.createNext();
-        optimizer.startComputation(computationId, input, idealOutput);
+        gradientGatherer.startComputation(computationId, input, idealOutput);
         Layer.Result result = inputLayer().process(computationId, input, idealOutput);
-        optimizer.endComputation(computationId);
+        Vector output = result.netOutput();
+
+        gradientGatherer.endComputation(computationId, output);
         return result.netOutput();
     }
 

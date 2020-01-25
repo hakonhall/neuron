@@ -10,11 +10,20 @@ public class IdentityTransform implements Transform {
     @Override public int inputSize() { return size; }
     @Override public int outputSize() { return size; }
     @Override public int parameterSize() { return 0; }
-    @Override public Vector compute(Vector input, Vector idealOutput) { return input; }
 
     @Override
-    public BackPropagation backPropagate(Vector input, Vector output, Vector idealOutput, Vector errorGradientOfOutput) {
-        return new BackPropagationImpl(errorGradientOfOutput, new Vector(0));
+    public ComputationResult compute(Vector input, Vector idealOutput) {
+        return new ComputationResult() {
+            @Override
+            public Vector output() {
+                return input;
+            }
+
+            @Override
+            public BackPropagation backPropagate(Vector errorGradientOfOutput) {
+                return new BackPropagationImpl(errorGradientOfOutput, Vector.from());
+            }
+        };
     }
 
     @Override

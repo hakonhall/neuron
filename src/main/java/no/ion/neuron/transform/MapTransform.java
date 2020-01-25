@@ -22,34 +22,39 @@ public class MapTransform implements Transform {
     @Override public void adjustParameters(Vector amount) { mapper.adjustParameters(amount); }
 
     @Override
-    public Vector compute(Vector input, Vector idealOutput) {
+    public ComputationResult compute(Vector input, Vector idealOutput) {
         Vector output = new Vector(size);
         for (int i = 0; i < size; ++i) {
             float value = mapper.f(input.get(i));
             output.setElement(i, value);
         }
 
-        return output;
-    }
-
-    @Override
-    public BackPropagation backPropagate(Vector input, Vector output, Vector idealOutput, Vector errorGradientOfOutput) {
-        Vector errorGradientOfInput = new Vector(inputSize());
-        for (int i = 0; i < inputSize(); ++i) {
-            float derivative = mapper.fGradient(input.get(i), output.get(i));
-            float errorGradientOfInput_i = derivative * errorGradientOfOutput.get(i);
-            errorGradientOfInput.addToElement(i, errorGradientOfInput_i);
-        }
-
-        Vector errorGradientOfParameter = new Vector(parameterSize());
-        for (int j = 0; j < parameterSize(); ++j) {
-            for (int i = 0; i < outputSize(); ++i) {
-                float paramDerivative = mapper.computeGradientOfParameter(j, input.get(i), output.get(i));
-                errorGradientOfParameter.addToElement(j, errorGradientOfOutput.get(i) * paramDerivative);
+        return new ComputationResult() {
+            @Override
+            public Vector output() {
+                return output;
             }
-        }
 
-        return new BackPropagationImpl(errorGradientOfInput, errorGradientOfParameter);
+            @Override
+            public BackPropagation backPropagate(Vector errorGradientOfOutput) {
+                Vector errorGradientOfInput = new Vector(inputSize());
+                for (int i = 0; i < inputSize(); ++i) {
+                    float derivative = mapper.fGradient(input.get(i), output.get(i));
+                    float errorGradientOfInput_i = derivative * errorGradientOfOutput.get(i);
+                    errorGradientOfInput.addToElement(i, errorGradientOfInput_i);
+                }
+
+                Vector errorGradientOfParameter = new Vector(parameterSize());
+                for (int j = 0; j < parameterSize(); ++j) {
+                    for (int i = 0; i < outputSize(); ++i) {
+                        float paramDerivative = mapper.computeGradientOfParameter(j, input.get(i), output.get(i));
+                        errorGradientOfParameter.addToElement(j, errorGradientOfOutput.get(i) * paramDerivative);
+                    }
+                }
+
+                return new BackPropagationImpl(errorGradientOfInput, errorGradientOfParameter);
+            }
+        };
     }
 
     @Override

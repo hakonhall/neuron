@@ -19,29 +19,42 @@ public class ScalingTransform implements Transform {
     @Override public int parameterSize() { return scales.size(); }
 
     @Override
-    public Vector compute(Vector input, Vector idealOutput) {
+    public ComputationResult compute(Vector input, Vector idealOutput) {
         Vector output = input.copy();
         output.scale(scales);
-        return output;
-    }
 
-    @Override
-    public BackPropagation backPropagate(Vector input, Vector output, Vector idealOutput, Vector errorGradientOfOutput) {
-        BackPropagationImpl backPropagation = new BackPropagationImpl(inputSize(), parameterSize());
+        return new ComputationResult() {
+            @Override
+            public Vector output() {
+                return output;
+            }
 
-        for (int i = 0; i < inputSize(); ++i) {
-            float gradientOfInput = errorGradientOfOutput.get(i) * scales.get(i);
-            backPropagation.errorGradientOfInputs().setElement(i, gradientOfInput);
+            @Override
+            public BackPropagation backPropagate(Vector errorGradientOfOutput) {
+                BackPropagationImpl backPropagation = new BackPropagationImpl(inputSize(), parameterSize());
 
-            float gradientOfParameter = errorGradientOfOutput.get(i) * input.get(i);
-            backPropagation.errorGradientOfParameters().setElement(i, gradientOfParameter);
-        }
+                for (int i = 0; i < inputSize(); ++i) {
+                    float gradientOfInput = errorGradientOfOutput.get(i) * scales.get(i);
+                    backPropagation.errorGradientOfInputs().setElement(i, gradientOfInput);
 
-        return backPropagation;
+                    float gradientOfParameter = errorGradientOfOutput.get(i) * input.get(i);
+                    backPropagation.errorGradientOfParameters().setElement(i, gradientOfParameter);
+                }
+
+                return backPropagation;
+            }
+        };
     }
 
     @Override
     public void adjustParameters(Vector amount) {
         scales.add(amount);
+    }
+
+    @Override
+    public String toString() {
+        return "ScalingTransform{" +
+                "scales=" + scales +
+                '}';
     }
 }

@@ -1,8 +1,8 @@
 package no.ion.neuron.optimizer;
 
+import no.ion.neuron.learner.FixedRateOptimizer;
+import no.ion.neuron.learner.Optimizer;
 import no.ion.neuron.tensor.Vector;
-import no.ion.neuron.learner.FixedRateLearner;
-import no.ion.neuron.learner.Learner;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,10 +12,10 @@ import java.util.stream.Collectors;
 /**
  * Mini-batch gradient descent regularization that can be applied to a single layer.
  */
-public class MiniBatchGradientDescent implements Optimizer {
+public class MiniBatchGradientDescent implements GradientGatherer {
     private final int batchSize;
     private final TreeMap<ComputationId, Computation> computations = new TreeMap<>();
-    private final Learner learner;
+    private final Optimizer optimizer;
 
     /** The current epoch's layers. */
     private TreeMap<LayerId, LayerInfo> layers = new TreeMap<>();
@@ -25,8 +25,8 @@ public class MiniBatchGradientDescent implements Optimizer {
     private int computationsCompletedInBatch = 0;
     private int ongoingComputations = 0;
 
-    private float batchError = 0; // E for the batch
-    private ArrayList<Float> errorHistory = null;
+    private Vector lastOutputSum = null;
+    private Vector outputSum = null;
 
     /**
      * A: The distance to the component of dP_{n+1} along dP_n, negative if backwards.
@@ -35,22 +35,14 @@ public class MiniBatchGradientDescent implements Optimizer {
     private ArrayList<Float> As = null;
     private ArrayList<Float> Bs = null;
 
-    public MiniBatchGradientDescent(int batchSize, Learner learner) {
+    public MiniBatchGradientDescent(int batchSize, Optimizer optimizer) {
         this.batchSize = batchSize;
-        this.learner = learner;
+        this.optimizer = optimizer;
     }
 
     public MiniBatchGradientDescent(int batchSize, float epsilon) {
-        this(batchSize, new FixedRateLearner(epsilon));
+        this(batchSize, new FixedRateOptimizer(epsilon));
     }
-
-    public void keepErrorHistory() { errorHistory = new ArrayList<>(); }
-
-    /**
-     * The first element is the error, E = errorVector^2 / 2 = (outputVector - idealOutputVector)^2 / 2,
-     * of the first computation, etc.
-     */
-    public List<Float> errorHistory() { return errorHistory; }
 
     @Override
     public void startComputation(ComputationId computationId, Vector input, Vector idealOutput) {
@@ -80,26 +72,13 @@ public class MiniBatchGradientDescent implements Optimizer {
         }
     }
 
-    /** Error is sum of square of error vector (output - ideal output) */
     @Override
-    public Vector errorGradient(ComputationId computationId, Vector output) {
-        var computation = getComputation(computationId);
-        computation.registerOutput(output);
-
-        Vector error = output.copy();
-        error.subtract(computation.idealOutput);
-
-        float EForComputation = error.squared() / 2.0f;
-        batchError += EForComputation;
-        if (errorHistory != null) {
-            errorHistory.add(EForComputation);
+    public void endComputation(ComputationId computationId, Vector output) {
+        if (outputSum == null) {
+            outputSum = output.copy();
+        } else {
+            outputSum.add(output);
         }
-
-        return error;
-    }
-
-    @Override
-    public void endComputation(ComputationId computationId) {
         --ongoingComputations;
         ++computationsCompletedInBatch;
         if (computationsCompletedInBatch < batchSize) {
@@ -118,8 +97,8 @@ public class MiniBatchGradientDescent implements Optimizer {
             }
         }
 
-        Learner.EpochInfo epochInfo = new Learner.EpochInfo(batchError, batchSize, unifiedGradient);
-        Vector adjustments = learner.learn(epochInfo);
+        Optimizer.EpochInfo epochInfo = new Optimizer.EpochInfo(outputSum.copy(), batchSize, unifiedGradient);
+        Vector adjustments = optimizer.learn(epochInfo);
 
         i = 0;
         for (var layerInfo : layers.values()) {
@@ -136,19 +115,12 @@ public class MiniBatchGradientDescent implements Optimizer {
         computations.remove(computationId);
 
         computationsCompletedInBatch = 0;
-        batchError = 0;
+        lastOutputSum = outputSum.copy();
+        outputSum.clear();
     }
 
-    public static class ApplyInfo {}
-
-    private Computation getComputation(ComputationId id) {
-        Computation computation = computations.get(id);
-        if (computation == null) {
-            throw new IllegalStateException("Unknown computation ID " + id);
-        }
-
-        return computation;
-    }
+    public Vector lastOutputSum() { return lastOutputSum; }
+    public int batchSize() { return batchSize; }
 
     private static class Computation {
         private final Vector input;
@@ -157,9 +129,6 @@ public class MiniBatchGradientDescent implements Optimizer {
         public Computation(Vector input, Vector idealOutput) {
             this.input = input;
             this.idealOutput = idealOutput;
-        }
-
-        public void registerOutput(Vector output) {
         }
     }
 

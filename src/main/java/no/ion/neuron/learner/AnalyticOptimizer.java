@@ -9,19 +9,19 @@ import java.util.Objects;
 /**
  * Wraps a learner and exposes various metrics that can be used to analyse the wrapped learner.
  */
-public class AnalyticLearner implements Learner {
-    private final Learner wrappedLearner;
+public class AnalyticOptimizer implements Optimizer {
+    private final Optimizer wrappedOptimizer;
     private final List<Epoch> epochs = new ArrayList<>();
 
     private boolean printEachEpoch = false;
 
-    public AnalyticLearner(Learner wrappedLearner) {
-        this.wrappedLearner = Objects.requireNonNull(wrappedLearner);
+    public AnalyticOptimizer(Optimizer wrappedOptimizer) {
+        this.wrappedOptimizer = Objects.requireNonNull(wrappedOptimizer);
     }
 
     @Override
     public Vector learn(EpochInfo epochInfo) {
-        Vector adjustments = wrappedLearner.learn(epochInfo);
+        Vector adjustments = wrappedOptimizer.learn(epochInfo);
         var previousEpoch = epochs.size() == 0 ? null : epochs.get(epochs.size() - 1);
         Epoch epoch = new Epoch(epochInfo.deepCopy(), adjustments.copy(), previousEpoch);
 
@@ -38,8 +38,8 @@ public class AnalyticLearner implements Learner {
 
     private void print(Epoch epoch) {
         System.out.println(String.format(
-                "%f %f %f %f %f %f",
-                epoch.epochInfo.error(),
+                "%s %f %f %f %f %f",
+                epoch.epochInfo.outputSum().toString(),
                 epoch.adjustments.length(),
                 epoch.decomposition.parallel,
                 epoch.decomposition.transverse,
