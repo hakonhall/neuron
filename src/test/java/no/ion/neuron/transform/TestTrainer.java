@@ -1,7 +1,7 @@
 package no.ion.neuron.transform;
 
-import no.ion.neuron.FeedForwardNeuralNet;
-import no.ion.neuron.learner.FixedRateOptimizer;
+import no.ion.neuron.NeuralNet;
+import no.ion.neuron.optimizer.FixedRateOptimizer;
 import no.ion.neuron.tensor.Matrix;
 import no.ion.neuron.tensor.Vector;
 import no.ion.neuron.trainer.DirectMiniBatch;
@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  * A class for training a single layer with 2 inputs.
  */
 public class TestTrainer {
-    private final FeedForwardNeuralNet net;
+    private final NeuralNet net;
     private final Trainer trainer;
     private final DirectMiniBatch miniBatch;
 
@@ -26,7 +26,7 @@ public class TestTrainer {
     private boolean printDebug;
 
     public TestTrainer(int inputSize, Transform transform) {
-        this.net = new FeedForwardNeuralNet(inputSize);
+        this.net = new NeuralNet(inputSize);
         net.addTransform(transform);
         this.trainer = new Trainer(net, new HalfErrorSquared(), new FixedRateOptimizer(0.1f));
         this.miniBatch = new DirectMiniBatch(trainer);

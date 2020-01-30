@@ -21,6 +21,7 @@ public class ActivationTransform implements Transform {
     @Override public int outputSize() { return size; }
     @Override public int parameterSize() { return 0; }
     @Override public void adjustParameters(Vector amount) { }
+    @Override public Vector parameters() { return new Vector(0); }
 
     @Override
     public ComputationResult compute(ComputeContext context, Vector input) {

@@ -16,6 +16,7 @@ public class WeightTransform implements Transform {
     @Override public int inputSize() { return weight.columns(); }
     @Override public int outputSize() { return weight.rows(); }
     @Override public int parameterSize() { return weight.rows() * weight.columns(); }
+    @Override public Vector parameters() { return weight.toVector(); }
 
     @Override
     public ComputationResult compute(ComputeContext context, Vector input) {

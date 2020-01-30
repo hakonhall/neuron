@@ -25,6 +25,7 @@ public interface ErrorFunction {
     Computation compute(Vector output, Vector idealOutput);
 
     default int parameterSize() { return 0; }
+    default Vector parameters() { return new Vector(0); }
     default void adjustParameters(Vector amount) {}
     String toString();
 }

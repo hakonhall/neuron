@@ -16,6 +16,7 @@ public class BiasTransform implements Transform {
     @Override public int inputSize(){ return bias.size(); }
     @Override public int outputSize() { return bias.size(); }
     @Override public int parameterSize() { return bias.size(); }
+    @Override public Vector parameters() { return bias.copy(); }
 
     @Override
     public ComputationResult compute(ComputeContext context, Vector input) {

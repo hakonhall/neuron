@@ -1,4 +1,4 @@
-package no.ion.neuron.optimizer;
+package no.ion.neuron.layer;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;

@@ -21,6 +21,7 @@ public class ErrorTransform implements Transform {
     @Override public int inputSize() { return inputSize; }
     @Override public int outputSize() { return 1; }
     @Override public int parameterSize() { return errorFunction.parameterSize(); }
+    @Override public Vector parameters() { return errorFunction.parameters(); }
 
     @Override
     public ComputationResult compute(ComputeContext context, Vector input) {
@@ -45,9 +46,6 @@ public class ErrorTransform implements Transform {
 
     @Override
     public String toString() {
-        return "ErrorTransform{" +
-                "inputSize=" + inputSize +
-                ", errorFunction=" + errorFunction +
-                '}';
+        return "ErrorTransform{" + errorFunction + '}';
     }
 }

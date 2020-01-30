@@ -1,9 +1,6 @@
 package no.ion.neuron.trainer;
 
-import no.ion.neuron.FeedForwardNeuralNet;
-import no.ion.neuron.learner.Optimizer;
 import no.ion.neuron.tensor.Vector;
-import no.ion.neuron.transform.loss.ErrorFunction;
 
 import java.util.ArrayList;
 import java.util.List;
