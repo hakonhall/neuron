@@ -18,6 +18,7 @@ public class ScalingTransform implements Transform {
     @Override public int inputSize() { return scales.size(); }
     @Override public int outputSize() { return scales.size(); }
     @Override public int parameterSize() { return scales.size(); }
+    @Override public Vector parameters() { return scales.copy(); }
 
     @Override
     public ComputationResult compute(ComputeContext context, Vector input) {

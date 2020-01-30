@@ -19,6 +19,9 @@ public interface Transform {
     /** The number of parameters. */
     int parameterSize();
 
+    /** The current value of the parameters. */
+    Vector parameters();
+
     interface BackPropagation {
         /** dE/dXj = sum_i dE/dYi dYi/dXj, where E is the error/loss, and Xj is the j'th input (input.get(j)). */
         Vector errorGradientOfInputs();

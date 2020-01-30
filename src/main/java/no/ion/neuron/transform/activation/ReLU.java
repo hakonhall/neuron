@@ -1,17 +1,17 @@
 package no.ion.neuron.transform.activation;
 
-public class LeakyReLU implements ActivationFunction {
+public class ReLU implements ActivationFunction {
     private final float epsilon;
 
     /**
      * @param epsilon e.g. 0.1
      */
-    public LeakyReLU(float epsilon) {
+    public ReLU(float epsilon) {
         this.epsilon = epsilon;
     }
 
     /** Plain ReLU */
-    public LeakyReLU() { this(0f); }
+    public ReLU() { this(0f); }
 
     @Override
     public float f(float x) {
@@ -25,6 +25,6 @@ public class LeakyReLU implements ActivationFunction {
 
     @Override
     public String toString() {
-        return "LeakyReLU{" + epsilon + '}';
+        return "ReLU{" + epsilon + '}';
     }
 }

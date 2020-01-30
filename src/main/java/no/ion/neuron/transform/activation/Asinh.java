@@ -3,7 +3,7 @@ package no.ion.neuron.transform.activation;
 import static java.lang.Math.log;
 import static java.lang.Math.sqrt;
 
-public class Arcsinh implements ActivationFunction {
+public class Asinh implements ActivationFunction {
     @Override
     public float f(float x) {
         return x < 0 ? -f(-x) : (float) log(x + sqrt(x * x + 1));
@@ -16,6 +16,6 @@ public class Arcsinh implements ActivationFunction {
 
     @Override
     public String toString() {
-        return "Arcsinh{}";
+        return "Asinh{}";
     }
 }

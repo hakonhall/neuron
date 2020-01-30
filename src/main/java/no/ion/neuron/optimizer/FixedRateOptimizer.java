@@ -1,4 +1,4 @@
-package no.ion.neuron.learner;
+package no.ion.neuron.optimizer;
 
 import no.ion.neuron.tensor.Vector;
 
@@ -14,8 +14,8 @@ public class FixedRateOptimizer implements Optimizer {
     }
 
     @Override
-    public Vector calculateParameterAdjustments(EpochInfo epochInfo) {
-        Vector adjustments = epochInfo.gradient().copy();
+    public Vector calculateParameterAdjustments(EpochSummary epochSummary) {
+        Vector adjustments = epochSummary.gradientSum().copy();
         adjustments.multiplyScalar(-learningRate);
         return adjustments;
     }

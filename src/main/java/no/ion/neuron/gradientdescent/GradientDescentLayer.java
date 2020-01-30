@@ -1,9 +1,9 @@
-package no.ion.neuron.internal;
+package no.ion.neuron.gradientdescent;
 
 import no.ion.neuron.ComputeContext;
 import no.ion.neuron.tensor.Vector;
-import no.ion.neuron.optimizer.LayerId;
-import no.ion.neuron.optimizer.ParametrizedLayer;
+import no.ion.neuron.layer.LayerId;
+import no.ion.neuron.layer.ParametrizedLayer;
 import no.ion.neuron.transform.Transform;
 
 public class GradientDescentLayer implements ParametrizedLayer {
@@ -27,6 +27,7 @@ public class GradientDescentLayer implements ParametrizedLayer {
     public void setDownstreamLayer(GradientDescentLayer downstream) { this.downstream = downstream; }
     public int inputSize() { return transform.inputSize(); }
     public int outputSize() { return transform.outputSize(); }
+    public Vector parameters() { return transform.parameters(); }
 
     public static class ProcessResult {
         private final Vector netOutput;

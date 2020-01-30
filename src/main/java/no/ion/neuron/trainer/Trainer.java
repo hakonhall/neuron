@@ -1,27 +1,29 @@
 package no.ion.neuron.trainer;
 
 import no.ion.neuron.ComputeContext;
-import no.ion.neuron.FeedForwardNeuralNet;
-import no.ion.neuron.learner.Optimizer;
+import no.ion.neuron.NeuralNet;
+import no.ion.neuron.optimizer.EpochSummary;
+import no.ion.neuron.optimizer.Optimizer;
 import no.ion.neuron.tensor.Vector;
 import no.ion.neuron.transform.ErrorTransform;
 import no.ion.neuron.transform.loss.ErrorFunction;
 
 /**
- * Takes ownership of a {@link FeedForwardNeuralNet neural net}, prepares it for training,
+ * Takes ownership of a {@link NeuralNet neural net}, prepares it for training,
  * and exposes method to process input/idealOutputs pairs, and a method to learn from
  * such experience with an optimizer.
  */
 public class Trainer {
-    private final FeedForwardNeuralNet net;
+    private final NeuralNet net;
     private final Optimizer optimizer;
     private final int outputSize;
 
+    private int epochs = 0;
     private int processed = 0;
     private float lastError = 0;
     private float sumError = 0;
 
-    public Trainer(FeedForwardNeuralNet net, ErrorFunction errorFunction, Optimizer optimizer) {
+    public Trainer(NeuralNet net, ErrorFunction errorFunction, Optimizer optimizer) {
         this.net = net;
         this.optimizer = optimizer;
         this.outputSize = net.outputSize();
@@ -57,9 +59,10 @@ public class Trainer {
             return;
         }
 
-        Vector gradientOfParameters = net.gradientOfParameters();
-        Optimizer.EpochInfo epochInfo = new Optimizer.EpochInfo(sumError, processed, gradientOfParameters);
-        Vector delta = optimizer.calculateParameterAdjustments(epochInfo);
+        ++epochs;
+        Vector gradientOfParameters = net.cumulativeGradientOfParameters();
+        EpochSummary epochSummary = new EpochSummary(epochs, sumError, processed, gradientOfParameters);
+        Vector delta = optimizer.calculateParameterAdjustments(epochSummary);
         net.adjustParameters(delta);
         net.clearCumulativeErrorGradientOfParameters();
         processed = 0;
