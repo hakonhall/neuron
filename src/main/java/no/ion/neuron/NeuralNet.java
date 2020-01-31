@@ -57,7 +57,7 @@ public class NeuralNet {
     public List<? extends ParametrizedLayer> layers() { return List.copyOf(layers); }
 
     public Vector compute(Vector input, Vector idealOutput) {
-        ComputeContext context = new ComputeContext(input);
+        ComputeContext context = new ComputeContext(idealOutput);
         return compute(context, input);
     }
 
